@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Simple Calculator</string>
+    <string name="btn_add">+</string>
+    <string name="btn_subtract">−</string>
+    <string name="btn_multiply">×</string>
+    <string name="btn_divide">÷</string>
+    <string name="btn_clear">C</string>
+    <string name="btn_equal">=</string>
+    <string name="btn_dot">.</string>
+    <string name="hint_display">0</string>
+</resources>
