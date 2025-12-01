@@ -28,17 +28,26 @@ public class MainActivity extends AppCompatActivity {
         int[] operatorIds = {R.id.btnAdd, R.id.btnSubtract, R.id.btnMultiply, R.id.btnDivide};
 
         View.OnClickListener numberListener = v -> {
+            if (input.length() >= 15) {
+                return;
+            }
+
             Button b = (Button) v;
             input.append(b.getText());
             tvExpression.setText(input.toString());
         };
+
         for (int id : numberIds) findViewById(id).setOnClickListener(numberListener);
 
         View.OnClickListener operatorListener = v -> {
             Button b = (Button) v;
             if (input.length() > 0) {
                 char lastChar = input.charAt(input.length() - 1);
+
                 if ("+-×÷".indexOf(lastChar) == -1) {
+                    if (input.length() >= 15) {
+                        return;
+                    }
                     input.append(b.getText());
                     tvExpression.setText(input.toString());
                 }
@@ -55,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btnEqual).setOnClickListener(v -> {
             try {
                 String expression = input.toString();
+                if (expression.isEmpty()) return;
                 double result = evaluate(expression);
 
                 String displayResult = (result == (long) result)
