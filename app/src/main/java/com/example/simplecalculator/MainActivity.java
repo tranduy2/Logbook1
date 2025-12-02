@@ -12,7 +12,8 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText etDisplay;
     private TextView tvExpression;
-    private StringBuilder input = new StringBuilder();
+
+    private boolean isResultShown = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,69 +23,101 @@ public class MainActivity extends AppCompatActivity {
         etDisplay = findViewById(R.id.etDisplay);
         tvExpression = findViewById(R.id.tvExpression);
 
+        etDisplay.setText("0");
+        tvExpression.setText("");
+
         int[] numberIds = {R.id.btn0, R.id.btn1, R.id.btn2, R.id.btn3, R.id.btn4,
-                R.id.btn5, R.id.btn6, R.id.btn7, R.id.btn8, R.id.btn9, R.id.btnDot};
+                R.id.btn5, R.id.btn6, R.id.btn7, R.id.btn8, R.id.btn9};
 
         int[] operatorIds = {R.id.btnAdd, R.id.btnSubtract, R.id.btnMultiply, R.id.btnDivide};
 
         View.OnClickListener numberListener = v -> {
-            if (input.length() >= 15) {
+            Button b = (Button) v;
+            String currentText = etDisplay.getText().toString();
+            String inputNum = b.getText().toString();
+
+            if (isResultShown) {
+                etDisplay.setText(inputNum);
+                tvExpression.setText("");
+                isResultShown = false;
                 return;
             }
 
-            Button b = (Button) v;
-            input.append(b.getText());
-            tvExpression.setText(input.toString());
+            if (currentText.equals("0")) {
+                etDisplay.setText(inputNum);
+            } else {
+                if (currentText.length() < 15) {
+                    etDisplay.append(inputNum);
+                }
+            }
         };
 
         for (int id : numberIds) findViewById(id).setOnClickListener(numberListener);
 
+        findViewById(R.id.btnDot).setOnClickListener(v -> {
+            if (isResultShown) {
+                etDisplay.setText("0.");
+                tvExpression.setText("");
+                isResultShown = false;
+            } else if (!etDisplay.getText().toString().contains(".")) {
+                etDisplay.append(".");
+            }
+        });
+
         View.OnClickListener operatorListener = v -> {
             Button b = (Button) v;
-            if (input.length() > 0) {
-                char lastChar = input.charAt(input.length() - 1);
+            String op = b.getText().toString();
+            String currentNum = etDisplay.getText().toString();
+            String history = tvExpression.getText().toString();
 
-                if ("+-×÷".indexOf(lastChar) == -1) {
-                    if (input.length() >= 15) {
-                        return;
-                    }
-                    input.append(b.getText());
-                    tvExpression.setText(input.toString());
-                }
+
+            if (isResultShown) {
+                tvExpression.setText(currentNum + " " + op + " ");
+                isResultShown = false;
+            } else {
+                tvExpression.setText(history + currentNum + " " + op + " ");
             }
+
+            etDisplay.setText("0");
         };
         for (int id : operatorIds) findViewById(id).setOnClickListener(operatorListener);
 
         findViewById(R.id.btnClear).setOnClickListener(v -> {
-            input.setLength(0);
-            tvExpression.setText("");
             etDisplay.setText("0");
+            tvExpression.setText("");
+            isResultShown = false;
         });
 
         findViewById(R.id.btnEqual).setOnClickListener(v -> {
-            try {
-                String expression = input.toString();
-                if (expression.isEmpty()) return;
-                double result = evaluate(expression);
+            String history = tvExpression.getText().toString();
+            String currentNum = etDisplay.getText().toString();
 
+            if (history.isEmpty()) return;
+
+            String fullExpression = history + currentNum;
+
+            try {
+                double result = evaluate(fullExpression);
                 String displayResult = (result == (long) result)
                         ? String.format("%d", (long) result)
                         : String.valueOf(result);
 
                 etDisplay.setText(displayResult);
-                tvExpression.setText(expression);
-                input.setLength(0);
-                input.append(displayResult);
+                tvExpression.setText(fullExpression);
+                isResultShown = true;
+
             } catch (Exception e) {
                 etDisplay.setText("Error");
                 tvExpression.setText("");
-                input.setLength(0);
+                isResultShown = true;
             }
         });
     }
 
     private double evaluate(String expression) {
+        expression = expression.replaceAll(" ", "");
         expression = expression.replace('×', '*').replace('÷', '/');
+
         Stack<Double> numbers = new Stack<>();
         Stack<Character> ops = new Stack<>();
 
